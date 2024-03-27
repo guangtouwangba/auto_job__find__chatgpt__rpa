@@ -40,4 +40,6 @@
 *.pyc
 .idea/
 .vs/
-
+**/__pycache__/
+**/*.pdf
+**/.env
