@@ -31,12 +31,15 @@ def open_browser_with_options(url, browser):
 
     # 等待直到页面包含特定的 XPath 元素
     xpath_locator = "//*[@id='header']/div[1]/div[3]/div/a"
+    print("start to wait element from page")
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.XPATH, xpath_locator))
     )
 
 def log_in():
     global driver
+
+    print("start to login with wechat")
 
     # 点击按钮
     login_button = driver.find_element(By.XPATH, "//*[@id='header']/div[1]/div[3]/div/a")
@@ -61,6 +64,25 @@ def log_in():
         EC.presence_of_element_located((By.XPATH, xpath_locator_login_success))
     )
 
+def login_with_app_qr_code():
+    # 点击按钮
+    print("点击登录按钮")
+    login_button = driver.find_element(By.XPATH, "//*[@id='header']/div[1]/div[3]/div/a")
+    login_button.click()
+    xpath_locator_app_qr_code = "//*[@id='wrap']/div/div[2]/div[2]/div[1]"
+    # WebDriverWait(driver, 10).until(
+    #     EC.presence_of_element_located((By.XPATH, xpath_locator_app_qr_code))
+    # )
+    print("点击二维码扫描")
+    app_qr_code_button = driver.find_element(By.XPATH, xpath_locator_app_qr_code)
+    app_qr_code_button.click()
+
+    xpath_locator_login_success = "//*[@id='header']/div[1]/div[3]/ul/li[2]/a"
+    WebDriverWait(driver, 60).until(
+        EC.presence_of_element_located((By.XPATH, xpath_locator_login_success))
+    )
+
+
 def get_job_description():
 
     global driver
@@ -81,39 +103,45 @@ def get_job_description():
     return job_description
 
 def select_dropdown_option(driver, label):
-    # 尝试在具有特定类的元素中找到文本
-    trigger_elements = driver.find_elements(By.XPATH, "//*[@class='recommend-job-btn has-tooltip']")
+    try:
+        # 尝试在具有特定类的元素中找到文本
+        trigger_elements = driver.find_elements(By.XPATH, "//*[@class='recommend-job-btn has-tooltip']")
+        # // *[ @ id = "wrap"] / div[2] / div[1] / div / div[1] / a[4]
 
-    # 标记是否找到元素
-    found = False
+        # 标记是否找到元素
+        found = False
 
-    for element in trigger_elements:
-        if label in element.text:
-            # 确保元素可见并且可点击
-            WebDriverWait(driver, 10).until(EC.element_to_be_clickable(element))
-            element.click()  # 点击找到的元素
-            found = True
-            break
+        for element in trigger_elements:
+            if label in element.text:
+                # 确保元素可见并且可点击
+                WebDriverWait(driver, 10).until(EC.element_to_be_clickable(element))
+                element.click()  # 点击找到的元素
+                found = True
+                break
 
-    # 如果在按钮中找到了文本，就不再继续下面的操作
-    if found:
-        return
+        # 如果在按钮中找到了文本，就不再继续下面的操作
+        if found:
+            return
 
-    # 如果在按钮中没有找到文本，执行原来的下拉列表操作
-    trigger_selector = "//*[@id='wrap']/div[2]/div[1]/div/div[1]/div"
-    WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, trigger_selector))
-    ).click()  # 打开下拉菜单
+        # 如果在按钮中没有找到文本，执行原来的下拉列表操作
+        trigger_selector = "//*[@id='wrap']/div[2]/div[1]/div/div[1]/div"
+        WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, trigger_selector))
+        ).click()  # 打开下拉菜单
 
-    dropdown_selector = "ul.dropdown-expect-list"
-    WebDriverWait(driver, 10).until(
-        EC.visibility_of_element_located((By.CSS_SELECTOR, dropdown_selector))
-    )
+        dropdown_selector = "ul.dropdown-expect-list"
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, dropdown_selector))
+        )
 
-    option_selector = f"//li[contains(text(), '{label}')]"
-    WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, option_selector))
-    ).click()  # 选择下拉菜单中的选项
+        option_selector = f"//li[contains(text(), '{label}')]"
+        WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, option_selector))
+        ).click()  # 选择下拉菜单中的选项
+    except Exception as e:
+        print(f"Error selecting dropdown option: {e}")
+        print("Trying to select the first option by default.")
+        time.sleep(5)
 
 
 def get_job_description_by_index(index):

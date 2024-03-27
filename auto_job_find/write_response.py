@@ -130,17 +130,24 @@ def send_job_descriptions_to_chat(url, browser_type, label, assistant_id=None, v
     # 开始浏览并获取工作描述
     finding_jobs.open_browser_with_options(url, browser_type)
     finding_jobs.log_in()
+    # finding_jobs.login_with_app_qr_code()
+    print("login finished")
 
     job_index = 1  # 开始的索引
-    while True:
+    # while True:
+    for i in range(1):
         try:
+            print("start to send description")
             # 获取 driver 实例
+            print("获取实例")
             driver = finding_jobs.get_driver()
 
             # 更改下拉列表选项
+            print("获取下拉列表")
             finding_jobs.select_dropdown_option(driver, label)
             # 调用 finding_jobs.py 中的函数来获取描述
             job_description = finding_jobs.get_job_description_by_index(job_index)
+            print("get job description " + job_description)
             if job_description:
                 element = driver.find_element(By.CSS_SELECTOR, '.op-btn.op-btn-chat').text
                 print(element)
@@ -181,7 +188,7 @@ def send_job_descriptions_to_chat(url, browser_type, label, assistant_id=None, v
 if __name__ == '__main__':
     url = "https://www.zhipin.com/web/geek/job-recommend?ka=header-job-recommend"
     browser_type = "chrome"
-    label = "iOS（深圳）"  # 想要选择的下拉菜单项
+    label = "Golang（上海）"  # 想要选择的下拉菜单项
     if should_use_langchain():
         text = read_resumes()
         chunks = get_text_chunks(text)
