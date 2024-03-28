@@ -8,6 +8,8 @@ from openai import OpenAI
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
+
+from auto_job_find.filter import is_satisfied_job
 from langchain_functions import get_text_chunks, get_vectorstore, read_resumes, should_use_langchain, generate_letter
 
 import functions
@@ -148,10 +150,11 @@ def send_job_descriptions_to_chat(url, browser_type, label, assistant_id=None, v
             # 调用 finding_jobs.py 中的函数来获取描述
             job_description = finding_jobs.get_job_description_by_index(job_index)
             print("get job description " + job_description)
-            if job_description:
-                element = driver.find_element(By.CSS_SELECTOR, '.op-btn.op-btn-chat').text
+            if job_description and is_satisfied_job(job_description):
+                element = driver.find_element(By.CSS_SELECTOR, '.op-btn.op-btn-chat')
+                element.screenshot("立即沟通.png")  # 将选中元素的截图保存为文件
                 print(element)
-                if element == '立即沟通':
+                if element.text == '立即沟通':
                     # 发送描述到聊天并打印响应
                     if should_use_langchain():
                         response = generate_letter(vectorstore, job_description)
@@ -162,14 +165,29 @@ def send_job_descriptions_to_chat(url, browser_type, label, assistant_id=None, v
                     # 点击沟通按钮
 
                     contact_button = driver.find_element(By.XPATH, "//*[@id='wrap']/div[2]/div[2]/div/div/div[2]/div/div[1]/div[2]/a[2]")
+                    contact_button.screenshot("立即沟通.png")  # 将选中元素的截图保存为文件
                     
                     contact_button.click()
 
                     # 等待回复框出现
                     xpath_locator_chat_box = "//*[@id='chat-input']"
-                    chat_box = WebDriverWait(driver, 50).until(
+
+                    try:
+                        chat_box_element = WebDriverWait(driver, 60).until(
                         EC.presence_of_element_located((By.XPATH, xpath_locator_chat_box))
-                    )
+                        )
+
+                        chat_box_element.screenshot("chat_box.png")  # 将选中元素的截图保存为文件
+                    except Exception as e:
+                        print(f"An error occurred: {e}")
+                        break
+
+
+
+                    #
+                    # chat_box = WebDriverWait(driver, 50).until(
+                    #     EC.presence_of_element_located((By.XPATH, xpath_locator_chat_box))
+                    # )
 
                     # 调用函数发送响应
                     send_response_and_go_back(driver, response)
